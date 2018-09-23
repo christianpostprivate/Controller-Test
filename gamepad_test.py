@@ -21,13 +21,13 @@ deadzone_trigger = 0.01
 
 
 # load images and set positions
-gamepad_bg = pg.image.load('gamepad.png')
+gamepad_bg = pg.image.load('assets/gamepad.png')
 
-button_a = pg.image.load('button_A.png')
-button_b = pg.image.load('button_B.png')
-button_x = pg.image.load('button_X.png')
-button_y = pg.image.load('button_Y.png')
-button_start = pg.image.load('button_start.png')
+button_a = pg.image.load('assets/button_A.png')
+button_b = pg.image.load('assets/button_B.png')
+button_x = pg.image.load('assets/button_X.png')
+button_y = pg.image.load('assets/button_Y.png')
+button_start = pg.image.load('assets/button_start.png')
 
 button_a_pos = (584, 201 + offset_y)
 button_b_pos = (637, 148 + offset_y)
@@ -37,8 +37,8 @@ button_y_pos = (585, 96 + offset_y)
 button_back_pos = (336, 159 + offset_y)
 button_start_pos = (451, 159 + offset_y)
 
-shoulder_l = pg.image.load('shoulderL.png')
-shoulder_r = pg.image.load('shoulderR.png')
+shoulder_l = pg.image.load('assets/shoulderL.png')
+shoulder_r = pg.image.load('assets/shoulderR.png')
 
 shoulder_l_pos = (123, 4 + offset_y)
 shoulder_r_pos = (510, 4 + offset_y)
@@ -52,10 +52,10 @@ stick_r_center = vec(510, 294 + offset_y)
 stick_radius = 30
 stick_size = 20
 
-dpad_up = pg.image.load('dpad_up.png')
-dpad_down = pg.image.load('dpad_down.png')
-dpad_left = pg.image.load('dpad_left.png')
-dpad_right = pg.image.load('dpad_right.png')
+dpad_up = pg.image.load('assets/dpad_up.png')
+dpad_down = pg.image.load('assets/dpad_down.png')
+dpad_left = pg.image.load('assets/dpad_left.png')
+dpad_right = pg.image.load('assets/dpad_right.png')
 
 dpad_pos = (262, 249 + offset_y)
 dpad = vec(0, 0)
@@ -141,7 +141,6 @@ try:
             # get axes values
             for i in range(axes):
                 axis = gamepads[0].get_axis(i)
-                #if abs(axis) > deadzone:
                 if i == 0:
                     stick_l.x = axis
                 elif i == 1:
