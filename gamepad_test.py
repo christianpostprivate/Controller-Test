@@ -2,6 +2,10 @@ import pygame as pg
 import traceback
 import math
 
+# checking the pygame version because they behave different
+version = pg.__version__
+PGVERSION = int(version.split('.')[0])
+
 offset_y = 64
 WIDTH = 812
 HEIGHT = 554 + offset_y
@@ -141,22 +145,40 @@ try:
             # get axes values
             for i in range(axes):
                 axis = gamepads[0].get_axis(i)
-                if i == 0:
+                if i == 0 and abs(axis) > deadzone_stick:
+                    # left stick left/right
                     stick_l.x = axis
-                elif i == 1:
+                elif i == 1 and abs(axis) > deadzone_stick:
+                    # left stick up/down
                     stick_l.y = axis
                 elif i == 2:
-                    if axis > deadzone_trigger:
-                        trigger_l = axis
-                        trigger_r = 0
-                    elif abs(axis) > deadzone_trigger:
-                        trigger_r = abs(axis)
-                        trigger_l = 0
-                elif i == 3:
-                    stick_r.y = axis
-                elif i == 4:
-                    stick_r.x = axis
-                    #print('axis', i, axis)
+                    if PGVERSION == 2:
+                        # left trigger
+                        if axis > deadzone_trigger:
+                            trigger_l = axis
+                    elif PGVERSION == 1:
+                        if axis > deadzone_trigger:
+                            trigger_l = axis
+                            trigger_r = 0
+                        elif abs(axis) > deadzone_trigger:
+                            trigger_r = abs(axis)
+                            trigger_l = 0
+                elif i == 3 and abs(axis) > deadzone_stick:
+                    # right stick left/right (or up/down in pygame 1)
+                    if PGVERSION == 1:
+                        stick_r.y = axis
+                    elif PGVERSION == 2:
+                        stick_r.x = axis
+                elif i == 4 and abs(axis) > deadzone_stick:
+                    # right stick up/down (or left/right in pygame 1)
+                    if PGVERSION == 1:
+                        stick_r.x = axis
+                    elif PGVERSION == 2:
+                        stick_r.y = axis
+                elif i == 5 and axis > deadzone_trigger:
+                    # right trigger
+                    # used only in pygame 2
+                    trigger_r = axis
             
             # get dpad values
             for i in range(dpads):
@@ -173,32 +195,37 @@ try:
                     
             # draw analog sticks
             # left stick
-            if stick_l.length_squared() != 0:
-                if stick_l.length() < deadzone_stick:
-                    stick_l.scale_to_length(0)
-                else:
-                    stick_l /= math.sqrt(abs(stick_l.x) + abs(stick_l.y))
-            vec_left = stick_l_center + stick_l * stick_radius
+            draw_stick_l = vec(0, 0)
+            draw_stick_l.x = stick_l.x * math.sqrt(1 - 0.5 * stick_l.y ** 2)
+            draw_stick_l.y = stick_l.y * math.sqrt(1 - 0.5 * stick_l.x ** 2)
+            if round(draw_stick_l.length(), 1) >= deadzone_stick:
+                vec_left = stick_l_center + draw_stick_l * stick_radius
+                stick_l.scale_to_length(0)
+            else:
+
+                vec_left = vec(stick_l_center)
             if stick_l_pressed:
                 color = (20, 20, 20)
             else:
                 color = (200, 200, 200)
-            pg.draw.circle(screen, color, (int(vec_left.x), int(vec_left.y)), 
+            pg.draw.circle(screen, color, (int(vec_left.x), int(vec_left.y)),
                            stick_size)
 
             # right stick
-            if stick_r.length_squared() != 0:
-                if stick_r.length() < deadzone_stick:
-                    stick_r.scale_to_length(0)
-                else:
-                    stick_r /= math.sqrt(abs(stick_r.x) + abs(stick_r.y))
-            vec_right = stick_r_center + stick_r * stick_radius
+            draw_stick_r = vec(0, 0)
+            draw_stick_r.x = stick_r.x * math.sqrt(1 - 0.5 * stick_r.y ** 2)
+            draw_stick_r.y = stick_r.y * math.sqrt(1 - 0.5 * stick_r.x ** 2)
+            if round(draw_stick_r.length(), 1) >= deadzone_stick:
+                vec_right = stick_r_center + draw_stick_r * stick_radius
+                stick_r.scale_to_length(0)
+            else:
+                vec_right = vec(stick_r_center)
             if stick_r_pressed:
                 color = (20, 20, 20)
             else:
                 color = (200, 200, 200)
             pg.draw.circle(screen, color, (int(vec_right.x), 
-                                    int(vec_right.y)), stick_size)
+                                           int(vec_right.y)), stick_size)
             
             # draw shoulder triggers
             r_l = pg.Rect(trigger_l_pos, (bar_width, trigger_l * bar_height))         
@@ -207,14 +234,14 @@ try:
             pg.draw.rect(screen, (200, 200, 200), r_r)
             
             
-            # draw slider to adjust deadzone
+            # draw a slider to adjust the deadzones
             pg.draw.line(screen, (100, 100, 100), slider_pos_start,
                          slider_pos_end, 6)
-            #get mouse position
+            # get mouse position
             m_pos = vec(pg.mouse.get_pos())
             # calculate slider_pos
             slider_pos = vec(slider_pos_start[0] + int(deadzone_stick 
-                          * slider_width), slider_pos_start[1])
+                             * slider_width), slider_pos_start[1])
             # check if mouse is within slider
             if (m_pos - slider_pos).length() < slider_size:
                 color = (150, 150, 150)
